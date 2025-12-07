@@ -18,7 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '../ui/button';
-import { Book, Code, Cpu, FlaskConical, GitBranch, GraduationCap, LayoutDashboard, Settings, BotMessageSquare, ChevronDown, ToyBrick, RefreshCcw, Orbit, Laptop, LogOut, Crown, BrainCircuit, ShieldCheck } from 'lucide-react';
+import { Book, Code, Cpu, FlaskConical, GitBranch, GraduationCap, LayoutDashboard, Settings, BotMessageSquare, ChevronDown, ToyBrick, RefreshCcw, Orbit, Laptop, LogOut, Crown, BrainCircuit, ShieldCheck, Speech } from 'lucide-react';
 import { useTokenUsage } from '@/hooks/use-token-usage';
 import { useProjects } from '@/hooks/use-projects';
 import { Input } from '../ui/input';
@@ -65,6 +65,10 @@ export function AppSidebar() {
     localStorage.setItem(GEMINI_KEY_STORAGE, inputKey.trim());
     setGeminiKey(inputKey.trim());
     setShowPrompt(false);
+    // Dispatch custom event so other components can update immediately
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('gemini-key-updated'));
+    }
     toast({
       title: 'Gemini API Key Saved',
       description: 'You can now use the platform.',
@@ -153,6 +157,14 @@ export function AppSidebar() {
                                 <BrainCircuit />
                                 Interview Practice
                                  <Badge variant="secondary" className="ml-auto">NEW</Badge>
+                            </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                        <Link href="/accent-ace">
+                            <SidebarMenuButton isActive={pathname.startsWith('/accent-ace')}>
+                                <Speech />
+                                Accent Ace
                             </SidebarMenuButton>
                         </Link>
                     </SidebarMenuItem>
@@ -254,7 +266,7 @@ export function AppSidebar() {
               </Button>
             </div>
              <p className='text-xs text-center text-muted-foreground pt-2 border-t'>
-                Made with ❤️ by certifyo-omsingh
+                Made with ❤️ by byteom-omsingh
             </p>
         </SidebarFooter>
     </Sidebar>

@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Bot, Lightbulb, Cpu, GraduationCap, BrainCircuit, BookOpen, PenTool, Mic, Crown, Sparkles, Menu, X } from 'lucide-react';
+import { ArrowRight, Bot, Lightbulb, Cpu, GraduationCap, BrainCircuit, BookOpen, PenTool, Mic, Crown, Sparkles, Menu, X, Speech, Shuffle, Presentation, Image as ImageIcon, MessageCircleQuestion } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import Footer from '@/components/layout/Footer';
@@ -42,6 +42,12 @@ function HomePageClient() {
             className="transition-colors hover:text-foreground/80 text-foreground/60"
           >
             Interview Prep
+          </Link>
+          <Link
+            href="/accent-ace"
+            className="transition-colors hover:text-foreground/80 text-foreground/60"
+          >
+            AccentAce
           </Link>
           <Link
             href="/contact"
@@ -96,6 +102,13 @@ function HomePageClient() {
               className="text-sm font-medium transition-colors hover:text-foreground/80 text-foreground/60 py-2"
             >
               Interview Prep
+            </Link>
+            <Link
+              href="/accent-ace"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm font-medium transition-colors hover:text-foreground/80 text-foreground/60 py-2"
+            >
+              AccentAce
             </Link>
             <Link
               href="/contact"
@@ -232,6 +245,152 @@ export default function WelcomePage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AccentAce Features Section */}
+      <section className="py-12 sm:py-16 md:py-20 bg-background">
+        <div className="container px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <Speech className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline">AccentAce</h2>
+            </div>
+            <p className="text-base sm:text-lg text-muted-foreground mt-2 max-w-2xl mx-auto px-4">
+              Your Personal AI Speech Coach - Master pronunciation, improve your accent, and perfect your speaking skills with AI-powered feedback.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
+            {/* Accent Ace */}
+            <Card className="group hover:border-primary transition-all duration-300 bg-card/80 hover:shadow-lg">
+              <CardHeader className="pb-3">
+                <div className="bg-primary/10 p-3 rounded-full w-fit group-hover:bg-primary/20 transition-colors">
+                  <Speech className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                </div>
+                <CardTitle className="font-headline mt-4 text-lg sm:text-xl">Accent Ace</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                  Practice your pronunciation with AI feedback. Compare your accent to native speakers and improve your speaking skills.
+                </p>
+                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                  <Link href="/accent-ace/practice">
+                    Try Now <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Pronunciation Practice */}
+            <Card className="group hover:border-primary transition-all duration-300 bg-card/80 hover:shadow-lg">
+              <CardHeader className="pb-3">
+                <div className="bg-primary/10 p-3 rounded-full w-fit group-hover:bg-primary/20 transition-colors">
+                  <MessageCircleQuestion className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                </div>
+                <CardTitle className="font-headline mt-4 text-lg sm:text-xl">Pronunciation Practice</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                  Read sentences and get detailed feedback on your speech, pronunciation accuracy, and word-level analysis.
+                </p>
+                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                  <Link href="/accent-ace/pronunciation-practice">
+                    Try Now <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Sentence Scramble */}
+            <Card className="group hover:border-primary transition-all duration-300 bg-card/80 hover:shadow-lg">
+              <CardHeader className="pb-3">
+                <div className="bg-primary/10 p-3 rounded-full w-fit group-hover:bg-primary/20 transition-colors">
+                  <Shuffle className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                </div>
+                <CardTitle className="font-headline mt-4 text-lg sm:text-xl">Sentence Scramble</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                  Unscramble jumbled sentences and speak them out loud. Perfect for improving your sentence structure and fluency.
+                </p>
+                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                  <Link href="/accent-ace/sentence-scramble">
+                    Try Now <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Impromptu Stage */}
+            <Card className="group hover:border-primary transition-all duration-300 bg-card/80 hover:shadow-lg">
+              <CardHeader className="pb-3">
+                <div className="bg-primary/10 p-3 rounded-full w-fit group-hover:bg-primary/20 transition-colors">
+                  <Presentation className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                </div>
+                <CardTitle className="font-headline mt-4 text-lg sm:text-xl">Impromptu Stage</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                  Speak on random topics for one minute. Get comprehensive analysis on grammar, pronunciation, topicality, and delivery.
+                </p>
+                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                  <Link href="/accent-ace/impromptu-stage">
+                    Try Now <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Pitch Perfect */}
+            <Card className="group hover:border-primary transition-all duration-300 bg-card/80 hover:shadow-lg">
+              <CardHeader className="pb-3">
+                <div className="bg-primary/10 p-3 rounded-full w-fit group-hover:bg-primary/20 transition-colors">
+                  <Mic className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                </div>
+                <CardTitle className="font-headline mt-4 text-lg sm:text-xl">Pitch Perfect</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                  Analyze your pitch and tone for emotional delivery. Perfect for mastering different emotional expressions in speech.
+                </p>
+                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                  <Link href="/accent-ace/pitch-perfect">
+                    Try Now <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Storyteller */}
+            <Card className="group hover:border-primary transition-all duration-300 bg-card/80 hover:shadow-lg">
+              <CardHeader className="pb-3">
+                <div className="bg-primary/10 p-3 rounded-full w-fit group-hover:bg-primary/20 transition-colors">
+                  <ImageIcon className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                </div>
+                <CardTitle className="font-headline mt-4 text-lg sm:text-xl">Storyteller</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                  Create compelling stories from three random images. Improve your storytelling skills with AI-powered feedback.
+                </p>
+                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                  <Link href="/accent-ace/storyteller">
+                    Try Now <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* AccentAce CTA */}
+          <div className="mt-8 sm:mt-12 text-center">
+            <Button asChild size="lg" variant="default" className="text-sm sm:text-base">
+              <Link href="/accent-ace">
+                Explore All AccentAce Features <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

@@ -1,16 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useSubscription } from '@/hooks/use-subscription';
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
     const searchParams = useSearchParams();
-    const router = useRouter();
     const paymentId = searchParams.get('payment_id');
     const { subscription, isLoading } = useSubscription();
     const [isVerifying, setIsVerifying] = useState(true);
@@ -92,6 +91,29 @@ export default function PaymentSuccessPage() {
                 </CardContent>
             </Card>
         </div>
+    );
+}
+
+function LoadingFallback() {
+    return (
+        <div className="container mx-auto max-w-2xl py-12 px-4 flex items-center justify-center min-h-[60vh]">
+            <Card className="w-full">
+                <CardContent className="pt-6">
+                    <div className="flex flex-col items-center justify-center gap-4">
+                        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                        <p className="text-muted-foreground">Loading...</p>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
+export default function PaymentSuccessPage() {
+    return (
+        <Suspense fallback={<LoadingFallback />}>
+            <PaymentSuccessContent />
+        </Suspense>
     );
 }
 
