@@ -9,13 +9,15 @@
  * - GenerateLearningPathOutput - The return type for the function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, createAIWithKey } from '@/ai/genkit';
 import { z } from 'zod';
+import { genkit } from 'genkit';
 
 const GenerateLearningPathInputSchema = z.object({
   topic: z.string().describe("The topic the user wants to learn (e.g., 'C++', 'Python', 'React Native')."),
   difficulty: z.string().describe("The desired difficulty for the learning path (e.g., 'Easy', 'Medium', 'Hard')."),
   operatingSystem: z.string().optional().describe("The user's operating system (e.g., 'Windows', 'macOS', 'Linux')."),
+  apiKey: z.string().optional().describe('The Gemini API key to use for this request.'),
 });
 export type GenerateLearningPathInput = z.infer<typeof GenerateLearningPathInputSchema>;
 
@@ -44,17 +46,7 @@ const GenerateLearningPathOutputSchema = z.object({
 export type GenerateLearningPathOutput = z.infer<typeof GenerateLearningPathOutputSchema>;
 
 
-export async function generateLearningPath(
-  input: GenerateLearningPathInput
-): Promise<GenerateLearningPathOutput> {
-  return generateLearningPathFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'generateLearningPathPrompt',
-  input: { schema: GenerateLearningPathInputSchema },
-  output: { schema: GenerateLearningPathOutputSchema },
-  prompt: `You are an expert curriculum designer creating a learning path for a given topic.
+const LEARNING_PATH_PROMPT = `You are an expert curriculum designer creating a learning path for a given topic.
 Your task is to generate a well-structured learning path outline with modules and lessons.
 **IMPORTANT**: Do NOT generate the actual lesson content. Only generate the titles and descriptions for the modules and lessons.
 
@@ -73,27 +65,49 @@ Your task is to generate a well-structured learning path outline with modules an
     *   **Easy:** Focus on fundamental concepts, simple examples, and getting started.
     *   **Medium:** Introduce more intermediate concepts, more complex examples, and best practices.
     *   **Hard:** Cover advanced topics, complex use cases, performance considerations, and in-depth theory.
-`,
-});
+`;
 
-const generateLearningPathFlow = ai.defineFlow(
-  {
-    name: 'generateLearningPathFlow',
-    inputSchema: GenerateLearningPathInputSchema,
-    outputSchema: GenerateLearningPathOutputSchema,
-  },
-  async (input) => {
-    const result = await prompt(input);
-    const usage = result.usage;
-    const tokensUsed = (usage?.inputTokens || 0) + (usage?.outputTokens || 0);
-    const output = result.output!;
-    
-    return {
-      id: `${output.topic.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${output.difficulty.toLowerCase()}-${Date.now()}`,
-      ...output,
-      topic: input.topic,
-      difficulty: input.difficulty,
-      tokensUsed: tokensUsed,
-    };
+function createGenerateLearningPathFlow(aiInstance: ReturnType<typeof genkit>) {
+  const prompt = aiInstance.definePrompt({
+    name: 'generateLearningPathPrompt',
+    input: { schema: GenerateLearningPathInputSchema },
+    output: { schema: GenerateLearningPathOutputSchema },
+    prompt: LEARNING_PATH_PROMPT,
+  });
+
+  return aiInstance.defineFlow(
+    {
+      name: 'generateLearningPathFlow',
+      inputSchema: GenerateLearningPathInputSchema,
+      outputSchema: GenerateLearningPathOutputSchema,
+    },
+    async (input) => {
+      const result = await prompt(input);
+      const usage = result.usage;
+      const tokensUsed = (usage?.inputTokens || 0) + (usage?.outputTokens || 0);
+      const output = result.output!;
+      
+      return {
+        id: `${output.topic.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${output.difficulty.toLowerCase()}-${Date.now()}`,
+        ...output,
+        topic: input.topic,
+        difficulty: input.difficulty,
+        tokensUsed: tokensUsed,
+      };
+    }
+  );
+}
+
+const defaultFlow = createGenerateLearningPathFlow(ai);
+
+export async function generateLearningPath(
+  input: GenerateLearningPathInput
+): Promise<GenerateLearningPathOutput> {
+  // Use custom API key if provided, otherwise use default
+  if (input.apiKey) {
+    const aiInstance = createAIWithKey(input.apiKey);
+    const customFlow = createGenerateLearningPathFlow(aiInstance);
+    return customFlow(input);
   }
-);
+  return defaultFlow(input);
+}

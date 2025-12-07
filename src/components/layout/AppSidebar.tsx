@@ -26,6 +26,7 @@ import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useUserPreferences, OperatingSystem } from '@/hooks/use-user-preferences';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { useSubscription } from '@/hooks/use-subscription';
 import { useAuth } from '@/hooks/use-auth';
 
 export function AppSidebar() {
@@ -35,6 +36,7 @@ export function AppSidebar() {
   const { toast } = useToast();
   const pathname = usePathname();
   const { operatingSystem, setOS } = useUserPreferences();
+  const { isTrialActive, trialDaysRemaining } = useSubscription();
 
   const isAdmin = user?.profile?.roles?.includes('admin') ?? false;
 
@@ -228,6 +230,15 @@ export function AppSidebar() {
             </div>
         </SidebarContent>
         <SidebarFooter className="p-2 space-y-2">
+            {isTrialActive && trialDaysRemaining && (
+                <Alert className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20 mb-2">
+                    <Crown className="h-4 w-4 text-purple-400" />
+                    <AlertTitle className="text-xs text-purple-300">🎉 Free Trial Active</AlertTitle>
+                    <AlertDescription className="text-xs text-purple-200">
+                        {trialDaysRemaining} days left
+                    </AlertDescription>
+                </Alert>
+            )}
             <div className="flex items-center justify-between p-2 rounded-lg hover:bg-secondary transition-colors group">
               <Link href="/profile" className="flex items-center gap-3 flex-1 overflow-hidden">
                   <Avatar className="h-8 w-8">

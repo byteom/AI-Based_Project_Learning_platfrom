@@ -1,6 +1,6 @@
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, writeBatch } from 'firebase/firestore';
+import { getFirestore, collection, doc, writeBatch } from 'firebase/firestore';
 import * as fs from 'fs';
 import * as path from 'path';
 import 'dotenv/config';
@@ -30,27 +30,31 @@ type Question = {
   tags?: string[];
 };
 
-async function bulkLoadQuestions() {
+async function bulkLoadQuestions(fileName: string = 'sample-questions.json') {
   try {
-    const filePath = path.resolve(__dirname, 'sample-questions.json');
+    const filePath = path.resolve(__dirname, fileName);
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const questions: Question[] = JSON.parse(fileContent);
 
     const batch = writeBatch(db);
     const questionsRef = collection(db, QUESTIONS_COLLECTION);
 
+    // Use doc() to create document references for batch operations
     questions.forEach((question) => {
-      const docRef = addDoc(questionsRef, question).withConverter(null); // Create a new doc reference
+      const docRef = doc(questionsRef); // Create a new doc reference
       batch.set(docRef, question);
     });
 
     await batch.commit();
-    console.log(`Successfully uploaded ${questions.length} questions to Firestore!`);
+    console.log(`✅ Successfully uploaded ${questions.length} questions to Firestore from ${fileName}!`);
 
   } catch (error) {
-    console.error('Error during bulk load:', error);
+    console.error('❌ Error during bulk load:', error);
     process.exit(1);
   }
 }
 
-bulkLoadQuestions().then(() => process.exit(0));
+// Allow command line argument for file name
+const fileName = process.argv[2] || 'sample-questions.json';
+bulkLoadQuestions(fileName).then(() => process.exit(0));
+

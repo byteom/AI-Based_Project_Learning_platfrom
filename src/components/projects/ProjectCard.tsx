@@ -32,9 +32,9 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, deleteProject }: ProjectCardProps) {
-  const { subscription, isLoading } = useSubscription();
+  const { hasProAccess } = useSubscription();
   const { toast } = useToast();
-  const isPro = subscription?.status === 'pro';
+  const isPro = hasProAccess;
 
   const handleDelete = () => {
     if (!isPro) {

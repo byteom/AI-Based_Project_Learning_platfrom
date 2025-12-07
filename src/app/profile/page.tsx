@@ -24,7 +24,7 @@ export default function ProfilePage() {
     const { projects } = useProjects();
     const { learningPaths } = useLearningPaths();
     const { operatingSystem, setOS, isLoading: isLoadingPreferences } = useUserPreferences();
-    const { subscription, isLoading: isSubscriptionLoading } = useSubscription();
+    const { subscription, isLoading: isSubscriptionLoading, hasProAccess, isTrialActive, trialDaysRemaining } = useSubscription();
 
     const completedProjectsCount = useMemo(() => {
         return projects.filter(p => p.steps.every(s => s.completed)).length;
@@ -90,9 +90,17 @@ export default function ProfilePage() {
                             {isSubscriptionLoading ? (
                                 <Badge variant="outline">Loading plan...</Badge>
                             ) : (
-                                <Badge variant={subscription?.status === 'pro' ? 'default' : 'secondary'}>
-                                    {subscription?.status === 'pro' ? 'Pro Plan' : 'Free Plan'}
-                                </Badge>
+                                <>
+                                    {isTrialActive ? (
+                                        <Badge variant="default" className="bg-gradient-to-r from-purple-500 to-pink-500">
+                                            🎉 Free Trial - {trialDaysRemaining} days left
+                                        </Badge>
+                                    ) : (
+                                        <Badge variant={hasProAccess ? 'default' : 'secondary'}>
+                                            {hasProAccess ? 'Pro Plan' : 'Free Plan'}
+                                        </Badge>
+                                    )}
+                                </>
                             )}
                              <div className="flex items-center gap-2">
                                 <CalendarDays className="h-4 w-4" />
@@ -107,7 +115,21 @@ export default function ProfilePage() {
                 </CardContent>
             </Card>
 
-            {subscription?.status !== 'pro' && !isSubscriptionLoading && (
+            {isTrialActive && !isSubscriptionLoading && (
+                <Alert className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20">
+                    <Crown className="h-4 w-4 text-purple-400" />
+                    <AlertTitle className="text-purple-300">🎉 You're on a Free Trial!</AlertTitle>
+                    <AlertDescription className="text-purple-200">
+                        You have {trialDaysRemaining} days left of free Pro access. Enjoy unlimited projects, learning paths, and all Pro features!
+                        {trialDaysRemaining && trialDaysRemaining <= 7 && (
+                            <Button asChild size="sm" className="ml-4">
+                                <Link href="/pricing">Upgrade to Keep Pro</Link>
+                            </Button>
+                        )}
+                    </AlertDescription>
+                </Alert>
+            )}
+            {!hasProAccess && !isTrialActive && !isSubscriptionLoading && (
                 <Alert variant="destructive">
                     <Crown className="h-4 w-4" />
                     <AlertTitle>You are on the Free Plan</AlertTitle>

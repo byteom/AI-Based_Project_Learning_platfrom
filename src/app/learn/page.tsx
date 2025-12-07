@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Loader2, Trash2 } from "lucide-react";
+import { Bot, Loader2, Trash2, Crown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTokenUsage } from "@/hooks/use-token-usage";
 import { generateLearningPath } from "@/ai/flows/generate-learning-path";
@@ -44,18 +44,26 @@ export default function LearnAnythingPage() {
   const { learningPaths, addLearningPath, deleteLearningPath, updateLearningPath, isLoading: isLoadingPaths } = useLearningPaths();
   const [activeLearningPath, setActiveLearningPath] = useState<LearningPath | null>(null);
   const { operatingSystem } = useUserPreferences();
-  const { subscription, isLoading: isSubscriptionLoading } = useSubscription();
+  const { subscription, isLoading: isSubscriptionLoading, hasProAccess, isTrialActive, trialDaysRemaining } = useSubscription();
   const { toast } = useToast();
-  const isPro = subscription?.status === 'pro';
+  const isPro = hasProAccess;
+  const [apiKey, setApiKey] = useState<string | null>(null);
 
   const { addTokens } = useTokenUsage();
+
+  // Get API key from localStorage
+  useEffect(() => {
+    const GEMINI_KEY_STORAGE = 'Project Code_gemini_api_key';
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(GEMINI_KEY_STORAGE) : null;
+    setApiKey(stored);
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { topic: "" },
   });
   
-  const canGenerate = isSubscriptionLoading || subscription?.status === 'pro' || learningPaths.length < 3;
+  const canGenerate = isSubscriptionLoading || hasProAccess || learningPaths.length < 3;
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     if (!canGenerate) {
@@ -67,6 +75,16 @@ export default function LearnAnythingPage() {
         return;
     }
 
+    // Check if API key is available
+    if (!apiKey) {
+      toast({
+        variant: "destructive",
+        title: "API Key Required",
+        description: "Please enter your Gemini API key in the sidebar to generate learning paths.",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     setActiveLearningPath(null);
     try {
@@ -74,6 +92,7 @@ export default function LearnAnythingPage() {
         topic: data.topic,
         difficulty: data.difficulty,
         operatingSystem: operatingSystem,
+        apiKey: apiKey, // Pass the API key from localStorage
       });
 
       if (result.tokensUsed) {
@@ -97,12 +116,24 @@ export default function LearnAnythingPage() {
       });
       form.reset();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to generate learning path:", error);
+      const errorMessage = error?.message || error?.toString() || '';
+      const isQuotaError = errorMessage.includes('quota') || 
+                          errorMessage.includes('429') || 
+                          errorMessage.includes('Too Many Requests') ||
+                          errorMessage.includes('Quota exceeded');
+      const isApiKeyError = errorMessage.includes('API key') || errorMessage.includes('GEMINI_API_KEY');
+      
       toast({
         variant: "destructive",
-        title: "Oh no! Something went wrong.",
-        description: "There was a problem generating the learning path. Please try again.",
+        title: isQuotaError ? "API Quota Exceeded" : isApiKeyError ? "API Key Error" : "Oh no! Something went wrong.",
+        description: isQuotaError 
+          ? "You've reached the Gemini API free tier limit. Please wait a few minutes or check your Google Cloud billing."
+          : isApiKeyError
+          ? "Please enter your Gemini API key in the sidebar or check your GEMINI_API_KEY in .env.local"
+          : "There was a problem generating the learning path. Please try again.",
+        duration: isQuotaError ? 10000 : 5000,
       });
     } finally {
       setIsGenerating(false);
@@ -133,12 +164,34 @@ export default function LearnAnythingPage() {
             `## ${m.title}\n${m.lessons.map(l => `- ${l.title}`).join('\n')}`
           ).join('\n\n');
 
+        // Check if API key is available
+        if (!apiKey) {
+            toast({
+                variant: "destructive",
+                title: "API Key Required",
+                description: "Please enter your Gemini API key in the sidebar to generate lesson content.",
+            });
+            // Revert loading state
+            const revertedPath = {
+                ...activeLearningPath,
+                modules: activeLearningPath.modules.map(m => 
+                    m.id === module.id ? {
+                        ...m,
+                        lessons: m.lessons.map(l => l.id === lesson.id ? {...l, content: ''} : l)
+                    } : m
+                )
+            };
+            setActiveLearningPath(revertedPath);
+            return;
+        }
+
         const result = await generateLessonContent({
             pathTitle: activeLearningPath.title,
             moduleTitle: module.title,
             lessonTitle: lesson.title,
             fullOutline: fullOutline,
             operatingSystem: operatingSystem,
+            apiKey: apiKey, // Pass the API key from localStorage
         });
 
         if (result.tokensUsed) {
@@ -158,12 +211,24 @@ export default function LearnAnythingPage() {
         await updateLearningPath(updatedPath);
         setActiveLearningPath(updatedPath);
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Failed to generate lesson content:", error);
+        const errorMessage = error?.message || error?.toString() || '';
+        const isQuotaError = errorMessage.includes('quota') || 
+                            errorMessage.includes('429') || 
+                            errorMessage.includes('Too Many Requests') ||
+                            errorMessage.includes('Quota exceeded');
+        const isApiKeyError = errorMessage.includes('API key') || errorMessage.includes('GEMINI_API_KEY');
+        
         toast({
             variant: "destructive",
-            title: "Content Generation Failed",
-            description: "There was a problem generating the lesson content. Please try again.",
+            title: isQuotaError ? "API Quota Exceeded" : isApiKeyError ? "API Key Error" : "Content Generation Failed",
+            description: isQuotaError 
+                ? "You've reached the Gemini API free tier limit. Please wait a few minutes or check your Google Cloud billing."
+                : isApiKeyError
+                ? "Please enter your Gemini API key in the sidebar or check your GEMINI_API_KEY in .env.local"
+                : "There was a problem generating the lesson content. Please try again.",
+            duration: isQuotaError ? 10000 : 5000,
         });
         // Revert loading state on error
          const revertedPath = {
@@ -177,7 +242,7 @@ export default function LearnAnythingPage() {
         };
         setActiveLearningPath(revertedPath);
     }
-  }, [activeLearningPath, updateLearningPath, addTokens, toast, operatingSystem]);
+  }, [activeLearningPath, updateLearningPath, addTokens, toast, operatingSystem, apiKey]);
   
   const handleDeleteLearningPath = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -193,7 +258,16 @@ export default function LearnAnythingPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl py-12 px-4">
+    <div className="container mx-auto max-w-4xl py-12 px-4 space-y-4">
+      {isTrialActive && trialDaysRemaining && (
+        <Alert className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20">
+          <Crown className="h-4 w-4 text-purple-400" />
+          <AlertTitle className="text-purple-300">🎉 You're on a Free Trial!</AlertTitle>
+          <AlertDescription className="text-purple-200">
+            You have {trialDaysRemaining} days left of free Pro access. Enjoy unlimited learning paths!
+          </AlertDescription>
+        </Alert>
+      )}
       <Card className="w-full">
         <CardHeader className="text-center">
             <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">

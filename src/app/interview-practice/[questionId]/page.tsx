@@ -32,10 +32,18 @@ export default function QuestionPracticePage() {
     const [feedback, setFeedback] = useState<GenerateInterviewFeedbackOutput | null>(null);
     const [mode, setMode] = useState<'audio' | 'text'>('audio');
     const [textAnswer, setTextAnswer] = useState('');
+    const [apiKey, setApiKey] = useState<string | null>(null);
 
     const { toast } = useToast();
     const { addTokens } = useTokenUsage();
     const { startRecording, stopRecording, isRecording, recordingTime, audioBlob, resetRecording } = useAudioRecorder();
+
+    // Get API key from localStorage
+    useEffect(() => {
+        const GEMINI_KEY_STORAGE = 'Project Code_gemini_api_key';
+        const stored = typeof window !== 'undefined' ? localStorage.getItem(GEMINI_KEY_STORAGE) : null;
+        setApiKey(stored);
+    }, []);
 
     useEffect(() => {
         if (!questionId) return;
@@ -61,6 +69,16 @@ export default function QuestionPracticePage() {
     const handleSubmit = async () => {
         if (!question || !user) return;
         
+        // Check if API key is available
+        if (!apiKey) {
+            toast({
+                variant: 'destructive',
+                title: 'API Key Required',
+                description: 'Please enter your Gemini API key in the sidebar to generate feedback.',
+            });
+            return;
+        }
+        
         let inputData;
         if (mode === 'audio') {
             if (!audioBlob) {
@@ -75,7 +93,7 @@ export default function QuestionPracticePage() {
             reader.readAsDataURL(audioBlob);
             reader.onloadend = () => {
                 const base64Audio = reader.result as string;
-                generateFeedback({ question: question.question, answerAudio: base64Audio });
+                generateFeedback({ question: question.question, answerAudio: base64Audio, apiKey: apiKey });
             };
         } else {
              if (!textAnswer.trim()) {
@@ -86,11 +104,11 @@ export default function QuestionPracticePage() {
                 });
                 return;
             }
-            generateFeedback({ question: question.question, answerText: textAnswer });
+            generateFeedback({ question: question.question, answerText: textAnswer, apiKey: apiKey });
         }
     };
 
-    const generateFeedback = async (payload: { question: string, answerAudio?: string, answerText?: string }) => {
+    const generateFeedback = async (payload: { question: string, answerAudio?: string, answerText?: string, apiKey?: string }) => {
         setIsGenerating(true);
         setFeedback(null);
         try {
@@ -116,12 +134,24 @@ export default function QuestionPracticePage() {
                 description: 'Your AI-powered feedback is ready and saved to your history.',
             });
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to generate feedback', error);
+            const errorMessage = error?.message || error?.toString() || '';
+            const isQuotaError = errorMessage.includes('quota') || 
+                              errorMessage.includes('429') || 
+                              errorMessage.includes('Too Many Requests') ||
+                              errorMessage.includes('Quota exceeded');
+            const isApiKeyError = errorMessage.includes('API key') || errorMessage.includes('GEMINI_API_KEY');
+            
             toast({
                 variant: 'destructive',
-                title: 'Error Generating Feedback',
-                description: 'There was a problem. Please try again.',
+                title: isQuotaError ? 'API Quota Exceeded' : isApiKeyError ? 'API Key Error' : 'Error Generating Feedback',
+                description: isQuotaError 
+                    ? "You've reached the Gemini API free tier limit. Please wait a few minutes or check your Google Cloud billing."
+                    : isApiKeyError
+                    ? "Please enter your Gemini API key in the sidebar or check your GEMINI_API_KEY in .env.local"
+                    : 'There was a problem. Please try again.',
+                duration: isQuotaError ? 10000 : 5000,
             });
         } finally {
             setIsGenerating(false);

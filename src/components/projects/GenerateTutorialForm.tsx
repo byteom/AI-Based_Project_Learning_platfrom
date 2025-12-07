@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -60,14 +60,23 @@ export function GenerateTutorialForm() {
   const { addTokens } = useTokenUsage();
   const { operatingSystem } = useUserPreferences();
   const { projects, addProject } = useProjects();
-  const { subscription, isLoading: isSubscriptionLoading } = useSubscription();
+  const { subscription, isLoading: isSubscriptionLoading, hasProAccess } = useSubscription();
+  
+  // Get API key from localStorage
+  const GEMINI_KEY_STORAGE = 'Project Code_gemini_api_key';
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  
+  React.useEffect(() => {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(GEMINI_KEY_STORAGE) : null;
+    setApiKey(stored);
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { prompt: "" },
   });
 
-  const canGenerate = isSubscriptionLoading || subscription?.status === 'pro' || projects.length < 3;
+  const canGenerate = isSubscriptionLoading || hasProAccess || projects.length < 3;
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     if (!canGenerate) {
@@ -79,12 +88,23 @@ export function GenerateTutorialForm() {
         return;
     }
 
+    // Check if API key is available
+    if (!apiKey) {
+      toast({
+        variant: "destructive",
+        title: "API Key Required",
+        description: "Please enter your Gemini API key in the sidebar to generate tutorials.",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const result = await generateTutorial({ 
         prompt: data.prompt,
         difficulty: data.difficulty,
         operatingSystem: operatingSystem,
+        apiKey: apiKey, // Pass the API key from localStorage
       });
 
       if (result.tokensUsed) {
@@ -99,13 +119,32 @@ export function GenerateTutorialForm() {
       });
       form.reset();
       router.push(`/projects/${newProject.id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to generate tutorial:", error);
-      toast({
-        variant: "destructive",
-        title: "Oh no! Something went wrong.",
-        description: "There was a problem generating the tutorial. Please try again.",
-      });
+      
+      // Check for quota/rate limit errors
+      const errorMessage = error?.message || error?.toString() || '';
+      const isQuotaError = errorMessage.includes('quota') || 
+                          errorMessage.includes('429') || 
+                          errorMessage.includes('Too Many Requests') ||
+                          errorMessage.includes('Quota exceeded');
+      
+      if (isQuotaError) {
+        toast({
+          variant: "destructive",
+          title: "API Quota Exceeded",
+          description: "You've reached the Gemini API free tier limit. Please wait a few minutes or check your Google Cloud billing. See console for details.",
+          duration: 10000,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Oh no! Something went wrong.",
+          description: errorMessage.includes('API key') 
+            ? "Please enter your Gemini API key in the sidebar or check your GEMINI_API_KEY in .env.local"
+            : "There was a problem generating the tutorial. Please try again.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

@@ -1,12 +1,15 @@
 
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardDescription, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, BadgeCheck, CheckCircle, FileQuestion, Loader2, MessageSquareHeart, Users } from "lucide-react";
+import { ArrowRight, BadgeCheck, CheckCircle, FileQuestion, Loader2, MessageSquareHeart, Users, Search, X, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getInterviewQuestions } from "@/lib/firestore-interview-questions";
 import type { InterviewQuestion } from "@/lib/types";
 
@@ -48,6 +51,11 @@ const categories = [
 export default function InterviewPracticePage() {
     const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState<string>("all");
+    const [selectedType, setSelectedType] = useState<string>("all");
+    const [selectedDifficulty, setSelectedDifficulty] = useState<string>("all");
+    const [selectedTag, setSelectedTag] = useState<string>("all");
 
     useEffect(() => {
         const fetchQuestions = async () => {
@@ -63,6 +71,54 @@ export default function InterviewPracticePage() {
         };
         fetchQuestions();
     }, []);
+
+    // Get all unique tags from questions
+    const allTags = useMemo(() => {
+        const tags = new Set<string>();
+        questions.forEach(q => {
+            q.tags?.forEach(tag => tags.add(tag));
+        });
+        return Array.from(tags).sort();
+    }, [questions]);
+
+    // Filter questions based on search and filters
+    const filteredQuestions = useMemo(() => {
+        return questions.filter(q => {
+            // Search filter
+            const matchesSearch = searchQuery === "" || 
+                q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                q.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                q.company?.toLowerCase().includes(searchQuery.toLowerCase());
+
+            // Category filter
+            const matchesCategory = selectedCategory === "all" || q.category === selectedCategory;
+
+            // Type filter
+            const matchesType = selectedType === "all" || q.type === selectedType;
+
+            // Difficulty filter
+            const matchesDifficulty = selectedDifficulty === "all" || q.difficulty === selectedDifficulty;
+
+            // Tag filter
+            const matchesTag = selectedTag === "all" || q.tags?.includes(selectedTag);
+
+            return matchesSearch && matchesCategory && matchesType && matchesDifficulty && matchesTag;
+        });
+    }, [questions, searchQuery, selectedCategory, selectedType, selectedDifficulty, selectedTag]);
+
+    const clearFilters = () => {
+        setSearchQuery("");
+        setSelectedCategory("all");
+        setSelectedType("all");
+        setSelectedDifficulty("all");
+        setSelectedTag("all");
+    };
+
+    const hasActiveFilters = searchQuery !== "" || 
+        selectedCategory !== "all" || 
+        selectedType !== "all" || 
+        selectedDifficulty !== "all" || 
+        selectedTag !== "all";
 
     return (
         <div className="container mx-auto max-w-7xl py-12 px-4 space-y-12">
@@ -96,13 +152,156 @@ export default function InterviewPracticePage() {
                 ))}
             </div>
 
+            {/* Search and Filter Section */}
+            <Card className="p-6">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                        <Filter className="h-5 w-5 text-muted-foreground" />
+                        <h2 className="text-xl font-bold font-headline">Search & Filter Questions</h2>
+                    </div>
+                    
+                    {/* Search Bar */}
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search questions, tags, or companies..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10"
+                        />
+                    </div>
+
+                    {/* Filter Controls */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Category</Label>
+                            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All Categories" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Categories</SelectItem>
+                                    <SelectItem value="Technical">Technical</SelectItem>
+                                    <SelectItem value="Behavioral">Behavioral</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Type</Label>
+                            <Select value={selectedType} onValueChange={setSelectedType}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All Types" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Types</SelectItem>
+                                    <SelectItem value="General">General</SelectItem>
+                                    <SelectItem value="Backend">Backend</SelectItem>
+                                    <SelectItem value="Frontend">Frontend</SelectItem>
+                                    <SelectItem value="Full Stack">Full Stack</SelectItem>
+                                    <SelectItem value="DevOps">DevOps</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Difficulty</Label>
+                            <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All Difficulties" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Difficulties</SelectItem>
+                                    <SelectItem value="Easy">Easy</SelectItem>
+                                    <SelectItem value="Medium">Medium</SelectItem>
+                                    <SelectItem value="Hard">Hard</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Tag</Label>
+                            <Select value={selectedTag} onValueChange={setSelectedTag}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All Tags" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Tags</SelectItem>
+                                    {allTags.map(tag => (
+                                        <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    {/* Active Filters and Clear Button */}
+                    {hasActiveFilters && (
+                        <div className="flex items-center justify-between pt-2 border-t">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm text-muted-foreground">Active filters:</span>
+                                {searchQuery && (
+                                    <Badge variant="secondary" className="gap-1">
+                                        Search: "{searchQuery}"
+                                        <button onClick={() => setSearchQuery("")} className="ml-1">
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </Badge>
+                                )}
+                                {selectedCategory !== "all" && (
+                                    <Badge variant="secondary" className="gap-1">
+                                        Category: {selectedCategory}
+                                        <button onClick={() => setSelectedCategory("all")} className="ml-1">
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </Badge>
+                                )}
+                                {selectedType !== "all" && (
+                                    <Badge variant="secondary" className="gap-1">
+                                        Type: {selectedType}
+                                        <button onClick={() => setSelectedType("all")} className="ml-1">
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </Badge>
+                                )}
+                                {selectedDifficulty !== "all" && (
+                                    <Badge variant="secondary" className="gap-1">
+                                        Difficulty: {selectedDifficulty}
+                                        <button onClick={() => setSelectedDifficulty("all")} className="ml-1">
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </Badge>
+                                )}
+                                {selectedTag !== "all" && (
+                                    <Badge variant="secondary" className="gap-1">
+                                        Tag: {selectedTag}
+                                        <button onClick={() => setSelectedTag("all")} className="ml-1">
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </Badge>
+                                )}
+                            </div>
+                            <Button variant="outline" size="sm" onClick={clearFilters}>
+                                <X className="h-4 w-4 mr-2" />
+                                Clear All
+                            </Button>
+                        </div>
+                    )}
+
+                    {/* Results Count */}
+                    <div className="text-sm text-muted-foreground">
+                        Showing {filteredQuestions.length} of {questions.length} questions
+                    </div>
+                </div>
+            </Card>
+
             <div className="space-y-4">
                  {isLoading ? (
                     <div className="flex justify-center items-center py-10">
                         <Loader2 className="h-8 w-8 animate-spin" />
                     </div>
-                ) : questions.length > 0 ? (
-                    questions.map(q => (
+                ) : filteredQuestions.length > 0 ? (
+                    filteredQuestions.map(q => (
                         <Card key={q.id} className="hover:border-primary/50 transition-colors">
                             <CardContent className="p-4 flex items-center justify-between">
                                 <div>
@@ -125,7 +324,16 @@ export default function InterviewPracticePage() {
                     ))
                 ) : (
                     <div className="text-center py-10 text-muted-foreground">
-                        No questions found. Check back later!
+                        {hasActiveFilters ? (
+                            <div className="space-y-4">
+                                <p>No questions match your current filters.</p>
+                                <Button variant="outline" onClick={clearFilters}>
+                                    Clear Filters
+                                </Button>
+                            </div>
+                        ) : (
+                            "No questions found. Check back later!"
+                        )}
                     </div>
                 )}
             </div>

@@ -10,7 +10,9 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "bulk-load": "tsx scripts/bulk-load-questions.ts"
+    "bulk-load": "tsx scripts/bulk-load-questions.ts",
+    "bulk-load-cse": "tsx scripts/bulk-load-questions.ts technical-cse-questions.json",
+    "seed-admin": "tsx scripts/seed-admin.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",

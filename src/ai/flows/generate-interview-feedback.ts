@@ -9,13 +9,15 @@
  * - GenerateInterviewFeedbackOutput - The return type for the function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, createAIWithKey } from '@/ai/genkit';
 import { z } from 'zod';
+import { genkit } from 'genkit';
 
 const GenerateInterviewFeedbackInputSchema = z.object({
   question: z.string().describe("The interview question that was asked."),
   answerText: z.string().optional().describe("The user's typed answer."),
   answerAudio: z.string().optional().describe("The user's answer recorded as an audio data URI."),
+  apiKey: z.string().optional().describe('The Gemini API key to use for this request.'),
 });
 export type GenerateInterviewFeedbackInput = z.infer<typeof GenerateInterviewFeedbackInputSchema>;
 
@@ -40,17 +42,7 @@ const GenerateInterviewFeedbackOutputSchema = z.object({
 export type GenerateInterviewFeedbackOutput = z.infer<typeof GenerateInterviewFeedbackOutputSchema>;
 
 
-export async function generateInterviewFeedback(
-  input: GenerateInterviewFeedbackInput
-): Promise<GenerateInterviewFeedbackOutput> {
-  return generateInterviewFeedbackFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'generateInterviewFeedbackPrompt',
-  input: { schema: GenerateInterviewFeedbackInputSchema },
-  output: { schema: GenerateInterviewFeedbackOutputSchema },
-  prompt: `You are a world-class interview and speech coach. Your task is to provide high-quality, constructive feedback on a user's answer to an interview question.
+const FEEDBACK_PROMPT = `You are a world-class interview and speech coach. Your task is to provide high-quality, constructive feedback on a user's answer to an interview question.
 You will receive the interview question and the user's answer, which can be either text or an audio recording.
 
 **Interview Question:**
@@ -86,25 +78,47 @@ Your response MUST be tailored based on the input type (text or audio).
 *   **Be Encouraging:** Always start with a positive point.
 *   **Be Actionable:** Provide concrete examples of how the user could improve.
 *   **Use Markdown:** Format the feedback for readability.
-`,
-});
+`;
 
-const generateInterviewFeedbackFlow = ai.defineFlow(
-  {
-    name: 'generateInterviewFeedbackFlow',
-    inputSchema: GenerateInterviewFeedbackInputSchema,
-    outputSchema: GenerateInterviewFeedbackOutputSchema,
-  },
-  async (input) => {
-    if (!input.answerAudio && !input.answerText) {
-      throw new Error('Either an audio answer or a text answer must be provided.');
+function createGenerateInterviewFeedbackFlow(aiInstance: ReturnType<typeof genkit>) {
+  const prompt = aiInstance.definePrompt({
+    name: 'generateInterviewFeedbackPrompt',
+    input: { schema: GenerateInterviewFeedbackInputSchema },
+    output: { schema: GenerateInterviewFeedbackOutputSchema },
+    prompt: FEEDBACK_PROMPT,
+  });
+
+  return aiInstance.defineFlow(
+    {
+      name: 'generateInterviewFeedbackFlow',
+      inputSchema: GenerateInterviewFeedbackInputSchema,
+      outputSchema: GenerateInterviewFeedbackOutputSchema,
+    },
+    async (input) => {
+      if (!input.answerAudio && !input.answerText) {
+        throw new Error('Either an audio answer or a text answer must be provided.');
+      }
+      const result = await prompt(input);
+      const usage = result.usage;
+      const tokensUsed = (usage?.inputTokens || 0) + (usage?.outputTokens || 0);
+      return {
+        ...result.output!,
+        tokensUsed: tokensUsed,
+      };
     }
-    const result = await prompt(input);
-    const usage = result.usage;
-    const tokensUsed = (usage?.inputTokens || 0) + (usage?.outputTokens || 0);
-    return {
-      ...result.output!,
-      tokensUsed: tokensUsed,
-    };
+  );
+}
+
+const defaultFlow = createGenerateInterviewFeedbackFlow(ai);
+
+export async function generateInterviewFeedback(
+  input: GenerateInterviewFeedbackInput
+): Promise<GenerateInterviewFeedbackOutput> {
+  // Use custom API key if provided, otherwise use default
+  if (input.apiKey) {
+    const aiInstance = createAIWithKey(input.apiKey);
+    const customFlow = createGenerateInterviewFeedbackFlow(aiInstance);
+    return customFlow(input);
   }
-);
+  return defaultFlow(input);
+}

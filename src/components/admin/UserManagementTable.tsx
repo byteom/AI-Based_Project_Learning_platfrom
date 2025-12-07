@@ -153,8 +153,25 @@ export function UserManagementTable() {
                 <div className="text-xs text-muted-foreground">Joined: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</div>
               </TableCell>
               <TableCell>
-                 <Badge variant={user.subscription?.status === 'pro' ? 'default' : 'secondary'} className={user.subscription?.status === 'pro' ? 'bg-green-500/20 text-green-300' : ''}>
-                    {user.subscription?.status ?? 'free'}
+                 <Badge 
+                    variant={
+                      user.subscription?.status === 'pro' 
+                        ? 'default' 
+                        : user.subscription?.status === 'trial'
+                        ? 'default'
+                        : 'secondary'
+                    } 
+                    className={
+                      user.subscription?.status === 'pro' 
+                        ? 'bg-green-500/20 text-green-300' 
+                        : user.subscription?.status === 'trial'
+                        ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300'
+                        : ''
+                    }
+                  >
+                    {user.subscription?.status === 'trial' 
+                      ? `Trial (${user.subscription.trial_end ? Math.ceil((user.subscription.trial_end - Date.now()) / (24 * 60 * 60 * 1000)) : '?'}d left)`
+                      : user.subscription?.status ?? 'free'}
                  </Badge>
               </TableCell>
               <TableCell>
@@ -179,7 +196,7 @@ export function UserManagementTable() {
                     <DropdownMenuContent>
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        {user.subscription?.status === 'pro' ? (
+                        {(user.subscription?.status === 'pro' || user.subscription?.status === 'trial') ? (
                             <DropdownMenuItem onClick={() => handleRevokePro(user.uid)}>
                                 <Crown className="mr-2 text-destructive"/> Revoke Pro Access
                             </DropdownMenuItem>

@@ -54,11 +54,24 @@ export interface LearningPath {
 
 export interface Subscription {
     userId: string;
-    status: 'free' | 'pro';
+    status: 'free' | 'pro' | 'trial';
     plan: string;
     subscriptionId?: string; // e.g., from a payment provider
-    trial_end?: number; // timestamp
+    trial_start?: number; // timestamp when trial started
+    trial_end?: number; // timestamp when trial ends
     current_period_end?: number; // timestamp
+}
+
+export interface PricingConfig {
+  id: string;
+  planName: string;
+  price: number;
+  currency: string; // 'USD', 'INR', etc.
+  interval: 'monthly' | 'yearly';
+  features: string[];
+  isActive: boolean;
+  createdAt?: number;
+  updatedAt?: number;
 }
 
 import type { GenerateInterviewFeedbackOutput } from "@/ai/flows/generate-interview-feedback";

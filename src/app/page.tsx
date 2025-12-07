@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Bot, Lightbulb, Cpu, GraduationCap, BrainCircuit, BookOpen, PenTool, Mic } from 'lucide-react';
+import { ArrowRight, Bot, Lightbulb, Cpu, GraduationCap, BrainCircuit, BookOpen, PenTool, Mic, Crown, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import Footer from '@/components/layout/Footer';
@@ -88,6 +88,40 @@ export default function WelcomePage() {
       {/* Hero Section */}
       <section className="py-20 md:py-32 text-center">
         <div className="container px-4">
+          {/* 30-Day Free Trial Banner */}
+          <div className="mb-8 max-w-3xl mx-auto">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 p-[2px]">
+              <div className="bg-background rounded-2xl p-6">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
+                      <Sparkles className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Limited Time Offer</p>
+                      <h3 className="text-2xl md:text-3xl font-bold font-headline bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
+                        <span className="text-3xl md:text-4xl">30 Days</span> Free Trial
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <p className="text-sm text-muted-foreground sm:hidden">Get full Pro access - No credit card required!</p>
+                    <Button asChild size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold shadow-lg hover:shadow-xl transition-all">
+                      <Link href="/auth">
+                        <Crown className="mr-2 h-5 w-5" />
+                        Start Free Trial Now
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground mt-3 hidden sm:block">
+                  <strong className="font-bold text-foreground">Get full Pro access</strong> - Unlimited projects, learning paths, and all premium features. <strong className="font-bold text-foreground">No credit card required!</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+
           <h1 className="text-5xl md:text-7xl font-bold font-headline tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-400 to-pink-500">
             Learn by Building
           </h1>

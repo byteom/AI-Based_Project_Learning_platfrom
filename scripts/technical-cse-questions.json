@@ -1,0 +1,220 @@
+[
+  {
+    "question": "Explain the difference between a stack and a queue. Provide examples of when you would use each.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Easy",
+    "tags": ["Data Structures", "Algorithms", "CSE"]
+  },
+  {
+    "question": "What is the time complexity of binary search? Explain how it works and when it's most efficient.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["Algorithms", "Searching", "Time Complexity", "CSE"]
+  },
+  {
+    "question": "Explain the concept of Big O notation. Give examples of O(1), O(n), O(log n), and O(n²) algorithms.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["Algorithms", "Time Complexity", "CSE", "Computer Science"]
+  },
+  {
+    "question": "What is the difference between a linked list and an array? When would you choose one over the other?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Easy",
+    "tags": ["Data Structures", "Arrays", "Linked Lists", "CSE"]
+  },
+  {
+    "question": "Explain how a hash table works. What is the average and worst-case time complexity for insertion, deletion, and lookup?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["Data Structures", "Hash Tables", "Algorithms", "CSE"]
+  },
+  {
+    "question": "What is the difference between a binary tree and a binary search tree? Explain tree traversal methods (in-order, pre-order, post-order).",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["Data Structures", "Trees", "Algorithms", "CSE"]
+  },
+  {
+    "question": "Explain the concept of recursion. Write a recursive function to calculate the factorial of a number and explain its time complexity.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Easy",
+    "tags": ["Algorithms", "Recursion", "Programming", "CSE"]
+  },
+  {
+    "question": "What is the difference between process and thread? Explain the advantages and disadvantages of multithreading.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Hard",
+    "tags": ["Operating Systems", "Concurrency", "Threading", "CSE"]
+  },
+  {
+    "question": "Explain the difference between TCP and UDP. When would you use each protocol?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["Networking", "TCP/IP", "UDP", "Computer Networks", "CSE"]
+  },
+  {
+    "question": "What is the difference between SQL and NoSQL databases? When would you choose one over the other?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["Databases", "SQL", "NoSQL", "Database Design", "CSE"]
+  },
+  {
+    "question": "Explain ACID properties in database transactions. Why are they important?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Hard",
+    "tags": ["Databases", "Transactions", "ACID", "Database Design", "CSE"]
+  },
+  {
+    "question": "What is the difference between REST and GraphQL? Explain the advantages and disadvantages of each.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["API Design", "REST", "GraphQL", "Web Development", "CSE"]
+  },
+  {
+    "question": "Explain object-oriented programming principles: Encapsulation, Inheritance, Polymorphism, and Abstraction.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["OOP", "Programming Concepts", "Software Engineering", "CSE"]
+  },
+  {
+    "question": "What is the difference between method overloading and method overriding? Provide examples.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Easy",
+    "tags": ["OOP", "Java", "Programming", "CSE"]
+  },
+  {
+    "question": "Explain the concept of garbage collection. How does it work in Java and Python?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Hard",
+    "tags": ["Memory Management", "Java", "Python", "Programming Languages", "CSE"]
+  },
+  {
+    "question": "What is the difference between pass by value and pass by reference? How does this work in different programming languages?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["Programming Concepts", "Memory Management", "CSE"]
+  },
+  {
+    "question": "Explain the concept of deadlock in operating systems. How can deadlocks be prevented or resolved?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Hard",
+    "tags": ["Operating Systems", "Concurrency", "Deadlock", "CSE"]
+  },
+  {
+    "question": "What is the difference between synchronous and asynchronous programming? Explain with examples.",
+    "category": "Technical",
+    "type": "Full Stack",
+    "difficulty": "Medium",
+    "tags": ["Programming", "Async/Await", "JavaScript", "CSE"]
+  },
+  {
+    "question": "Explain the concept of caching. What are different caching strategies and when would you use each?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["System Design", "Caching", "Performance", "CSE"]
+  },
+  {
+    "question": "What is the difference between a compiler and an interpreter? Give examples of languages that use each.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Easy",
+    "tags": ["Programming Languages", "Compilers", "Interpreters", "CSE"]
+  },
+  {
+    "question": "Explain the concept of virtual memory. How does it work and what are its benefits?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Hard",
+    "tags": ["Operating Systems", "Memory Management", "CSE"]
+  },
+  {
+    "question": "What is the difference between a primary key and a foreign key in a database? Explain with examples.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Easy",
+    "tags": ["Databases", "SQL", "Database Design", "CSE"]
+  },
+  {
+    "question": "Explain the concept of normalization in database design. What are the different normal forms?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Hard",
+    "tags": ["Databases", "Database Design", "Normalization", "CSE"]
+  },
+  {
+    "question": "What is the difference between a stack overflow and a heap overflow? How can they be prevented?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Hard",
+    "tags": ["Memory Management", "Programming", "Security", "CSE"]
+  },
+  {
+    "question": "Explain the concept of design patterns. Name and explain three common design patterns (e.g., Singleton, Factory, Observer).",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["Design Patterns", "Software Engineering", "OOP", "CSE"]
+  },
+  {
+    "question": "What is the difference between GET and POST HTTP methods? When would you use each?",
+    "category": "Technical",
+    "type": "Full Stack",
+    "difficulty": "Easy",
+    "tags": ["HTTP", "Web Development", "REST API", "CSE"]
+  },
+  {
+    "question": "Explain the concept of load balancing. What are different load balancing algorithms and their use cases?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Hard",
+    "tags": ["System Design", "Load Balancing", "Distributed Systems", "CSE"]
+  },
+  {
+    "question": "What is the difference between a microservice and a monolithic architecture? Explain the advantages and disadvantages of each.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Hard",
+    "tags": ["System Design", "Architecture", "Microservices", "CSE"]
+  },
+  {
+    "question": "Explain the concept of indexing in databases. How does it improve query performance?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["Databases", "Performance", "SQL", "CSE"]
+  },
+  {
+    "question": "What is the difference between a static variable and an instance variable? Explain with examples.",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Easy",
+    "tags": ["OOP", "Programming", "Java", "CSE"]
+  },
+  {
+    "question": "Explain the concept of API rate limiting. Why is it important and how can it be implemented?",
+    "category": "Technical",
+    "type": "Backend",
+    "difficulty": "Medium",
+    "tags": ["API Design", "System Design", "Security", "CSE"]
+  }
+]
+

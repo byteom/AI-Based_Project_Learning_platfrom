@@ -9,13 +9,14 @@
  * - GenerateTutorialOutput - The return type for the generateTutorial function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {ai, createAIWithKey} from '@/ai/genkit';
+import {z, genkit} from 'genkit';
 
 const GenerateTutorialInputSchema = z.object({
   prompt: z.string().describe('The prompt to generate a tutorial from.'),
   difficulty: z.string().describe("The desired difficulty for the tutorial (e.g., 'Easy', 'Medium', 'Hard')."),
   operatingSystem: z.string().optional().describe("The user's operating system (e.g., 'Windows', 'macOS', 'Linux')."),
+  apiKey: z.string().optional().describe('The Gemini API key to use for this request.'),
 });
 export type GenerateTutorialInput = z.infer<typeof GenerateTutorialInputSchema>;
 
@@ -44,15 +45,7 @@ const GenerateTutorialOutputSchema = z.object({
 });
 export type GenerateTutorialOutput = z.infer<typeof GenerateTutorialOutputSchema>;
 
-export async function generateTutorial(input: GenerateTutorialInput): Promise<GenerateTutorialOutput> {
-  return generateTutorialFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'generateTutorialPrompt',
-  input: {schema: GenerateTutorialInputSchema},
-  output: {schema: GenerateTutorialOutputSchema},
-  prompt: `You are an expert tutorial generator specializing in creating detailed, comprehensive, project-based learning guides for software developers. Your output must be a robust and well-structured project outline.
+const TUTORIAL_PROMPT = `You are an expert tutorial generator specializing in creating detailed, comprehensive, project-based learning guides for software developers. Your output must be a robust and well-structured project outline.
 
 **Project Request:** {{{prompt}}}
 **Difficulty Level:** {{{difficulty}}}
@@ -76,23 +69,43 @@ Your task is to generate a complete project outline based on the user's prompt a
 5.  **Skills:** Generate a list of 5-10 specific, tangible skills the user will learn by completing this project (e.g., "State Management with React Hooks", "Data Fetching with Axios", "Responsive Design with Flexbox").
 6.  **Simulation Diagram:** Create a high-level system architecture or flowchart for the project. The diagram MUST be written using Mermaid.js 'graph' syntax (e.g., 'graph TD; A[Client] --> B(API); B --> C{Database};'). This should give a simple, clear overview of the main components and their interactions.
 
-**CRITICAL:** Do NOT generate the actual implementation code or detailed markdown content in this step. You are only creating the tutorial's high-level structure and outline. The output must be exhaustive and detailed.`,
-});
+**CRITICAL:** Do NOT generate the actual implementation code or detailed markdown content in this step. You are only creating the tutorial's high-level structure and outline. The output must be exhaustive and detailed.`;
 
-const generateTutorialFlow = ai.defineFlow(
-  {
-    name: 'generateTutorialFlow',
-    inputSchema: GenerateTutorialInputSchema,
-    outputSchema: GenerateTutorialOutputSchema,
-  },
-  async input => {
-    const result = await prompt(input);
-    const usage = result.usage;
-    const tokensUsed = (usage?.inputTokens || 0) + (usage?.outputTokens || 0);
-    return {
-      ...result.output!,
-      tokensUsed: tokensUsed,
-      progress: 'Generated a tutorial from the given prompt.'
-    };
+function createGenerateTutorialFlow(aiInstance: ReturnType<typeof genkit>) {
+  const prompt = aiInstance.definePrompt({
+    name: 'generateTutorialPrompt',
+    input: {schema: GenerateTutorialInputSchema},
+    output: {schema: GenerateTutorialOutputSchema},
+    prompt: TUTORIAL_PROMPT,
+  });
+  
+  return aiInstance.defineFlow(
+    {
+      name: 'generateTutorialFlow',
+      inputSchema: GenerateTutorialInputSchema,
+      outputSchema: GenerateTutorialOutputSchema,
+    },
+    async input => {
+      const result = await prompt(input);
+      const usage = result.usage;
+      const tokensUsed = (usage?.inputTokens || 0) + (usage?.outputTokens || 0);
+      return {
+        ...result.output!,
+        tokensUsed: tokensUsed,
+        progress: 'Generated a tutorial from the given prompt.'
+      };
+    }
+  );
+}
+
+const defaultFlow = createGenerateTutorialFlow(ai);
+
+export async function generateTutorial(input: GenerateTutorialInput): Promise<GenerateTutorialOutput> {
+  // Use custom API key if provided, otherwise use default
+  if (input.apiKey) {
+    const aiInstance = createAIWithKey(input.apiKey);
+    const customFlow = createGenerateTutorialFlow(aiInstance);
+    return customFlow(input);
   }
-);
+  return defaultFlow(input);
+}
