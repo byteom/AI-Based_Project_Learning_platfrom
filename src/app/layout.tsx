@@ -17,40 +17,30 @@ const fontHeadline = Space_Grotesk({
   variable: "--font-headline",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Project Code - Learn by Building Real-World Projects",
     template: `%s | Project Code`,
   },
   description: "Stop watching tutorials and start building. Project Code offers AI-guided, step-by-step learning paths for building real-world applications.",
   keywords: ["learn to code", "project-based learning", "ai coding assistant", "nextjs projects", "react projects"],
-  icons: {
-    icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: 'any' },
-    ],
-    apple: [
-      { url: '/apple-icon.svg', type: 'image/svg+xml' },
-    ],
-  },
+  // Icons are automatically handled by Next.js from icon.svg and apple-icon.svg in app directory
   openGraph: {
     title: "Project Code - Learn by Building Real-World Projects",
     description: "Stop watching tutorials and start building. Project Code offers AI-guided, step-by-step learning paths for building real-world applications.",
     type: "website",
-    images: [
-      {
-        url: '/opengraph-image.svg',
-        width: 1200,
-        height: 630,
-        alt: 'Project Code - Learn by Building',
-      },
-    ],
+    siteName: "Project Code",
+    url: siteUrl,
+    // Open Graph image is automatically handled by opengraph-image.tsx in app directory
   },
   twitter: {
     card: "summary_large_image",
     title: "Project Code - Learn by Building Real-World Projects",
     description: "Stop watching tutorials and start building. AI-guided, step-by-step learning paths.",
-    images: ['/opengraph-image.svg'],
+    // Twitter image is automatically handled by opengraph-image.tsx
   },
 };
 
