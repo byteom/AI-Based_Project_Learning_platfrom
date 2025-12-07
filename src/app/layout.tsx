@@ -24,6 +24,34 @@ export const metadata: Metadata = {
   },
   description: "Stop watching tutorials and start building. Project Code offers AI-guided, step-by-step learning paths for building real-world applications.",
   keywords: ["learn to code", "project-based learning", "ai coding assistant", "nextjs projects", "react projects"],
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: [
+      { url: '/apple-icon.svg', type: 'image/svg+xml' },
+    ],
+  },
+  openGraph: {
+    title: "Project Code - Learn by Building Real-World Projects",
+    description: "Stop watching tutorials and start building. Project Code offers AI-guided, step-by-step learning paths for building real-world applications.",
+    type: "website",
+    images: [
+      {
+        url: '/opengraph-image.svg',
+        width: 1200,
+        height: 630,
+        alt: 'Project Code - Learn by Building',
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Project Code - Learn by Building Real-World Projects",
+    description: "Stop watching tutorials and start building. AI-guided, step-by-step learning paths.",
+    images: ['/opengraph-image.svg'],
+  },
 };
 
 export default function RootLayout({
