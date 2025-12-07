@@ -1,5 +1,3 @@
-'use server';
-
 import { db } from "./firebase";
 import { doc, getDoc, setDoc, collection, getDocs, writeBatch } from "firebase/firestore";
 
